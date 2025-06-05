@@ -10,7 +10,6 @@ class BorderedBox(QFrame):
         self.setStyleSheet("""
             QFrame#borderedBox {
                 border: 3px solid #FBFFD9;
-                border-radius: 3px;
                 background-color: #171514;
             }
         """)
@@ -20,7 +19,7 @@ class BorderedBox(QFrame):
         titleLabel = QLabel(title)
         titleLabel.setFont(QFont("Minecraft", 35))
         titleLabel.setStyleSheet("color: #FBFFD9;")
-        titleLabel.setContentsMargins(0, 30, 0, 0)
+        titleLabel.setContentsMargins(0, 20, 0, 0)
         layout.addWidget(titleLabel, alignment=Qt.AlignTop | Qt.AlignCenter)
 
         self.body_layout = layout

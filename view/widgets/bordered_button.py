@@ -8,7 +8,6 @@ def create_bordered_button(text):
     button.setStyleSheet("""
         QPushButton {
             border: 3px solid #FBFFD9;
-            border-radius: 3px;
             color: #FBFFD9;
             background-color: #171514;
         }

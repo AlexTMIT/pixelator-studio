@@ -2,8 +2,6 @@ class AppController:
     def __init__(self, model, view):
         self.model = model
         self.view = view
-
-        # Connect view signals to controller slots
         self._connect_signals()
 
     def _connect_signals(self):
