@@ -18,10 +18,10 @@ def create_bordered_button(text):
             background-color: #FBFFD9;
             color: #171514;
         }
-            QPushButton:disabled {
-            border: 3px solid #727363;
-            color: #727363;
-            background-color: #171514;
+        QPushButton:disabled {
+        border: 3px solid #727363;
+        color: #727363;
+        background-color: #171514;
         }
      """)
     

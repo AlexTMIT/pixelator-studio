@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout, QGridLayout
+from PySide6.QtWidgets import QLabel
 from PySide6.QtGui import QFont
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Signal
 
 from view.widgets.slider_factory import make_slider_block
 from .bordered_box import BorderedBox
