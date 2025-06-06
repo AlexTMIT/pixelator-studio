@@ -55,6 +55,10 @@ class ColorsWidget(BorderedBox):
         combo_mode.setCurrentText("pythagorean color average")
         grid.addWidget(combo_mode, 0, 1, alignment=Qt.AlignVCenter | Qt.AlignLeft)
 
+        spacer = QWidget()
+        spacer.setFixedWidth(20)
+        grid.addWidget(spacer, 0, 2)  # Spacer between label and combo box
+
         # ─── Row 1: “color scheme:” label + (disabled) combo box ──────────────────────
         label_scheme = QLabel("color scheme:")
         label_scheme.setFont(QFont("Minecraft", 12))
@@ -106,6 +110,8 @@ class ColorsWidget(BorderedBox):
         # Disable so it appears greyed out
         combo_scheme.setEnabled(False)
         grid.addWidget(combo_scheme, 1, 1, alignment=Qt.AlignVCenter | Qt.AlignLeft)
+
+        grid.addWidget(spacer, 1, 2)
 
         # ─── Insert the grid into a container and add it to the body_layout ───────────
         container = QWidget()
