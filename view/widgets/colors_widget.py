@@ -88,6 +88,7 @@ class ColorsWidget(BorderedBox):
                 color: #FBFFD9;
                 selection-background-color: #FBFFD9;
                 selection-color: #171514;
+                min-width: 130px;
             }
             QComboBox QAbstractItemView::item:hover {
                 background-color: #FBFFD9;
