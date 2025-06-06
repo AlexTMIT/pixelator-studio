@@ -137,19 +137,27 @@ class AppController:
         mode = self.model.pixel_mode
         amount = self.model.pixel_amount or 0
 
-        if mode is None or amount == 0:
+        if amount == 0:
             return image
 
-        if mode == PixelationMode.PYTHAGOREAN_COLOR_AVERAGE:
-            # … your implementation for that mode …
-            pass
+        match mode:
+            case PixelationMode.PYTHAGOREAN_COLOR_AVERAGE:
+                return self.pythagorean_color_average(amount, image)
+            case PixelationMode.SCHEMATIC_APPROXIMATION:
+                return self.schematic_approximation(amount, image)
+            case PixelationMode.MEDIAN_COLOR:
+                return self.median_color(amount, image)
+            case _:
+                return image
 
-        if mode == PixelationMode.SCHEMATIC_APPROXIMATION:
-            scheme = self.model.color_scheme or "warm beige"
-            # … use `scheme` to pick a palette and apply schematic approximation …
-            pass
-
-        # Default fallback:
+    def pythagorean_color_average(self, amount: int, image: Image.Image) -> Image.Image:
+        return image
+    
+    def schematic_approximation(self, amount: int, image: Image.Image) -> Image.Image:
+        scheme = self.model.color_scheme or "warm beige"
+        return image
+    
+    def median_color(self, amount: int, image: Image.Image) -> Image.Image:
         return image
 
     def edit_brightness(self, image: Image.Image) -> Image.Image:
