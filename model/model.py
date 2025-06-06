@@ -1,12 +1,15 @@
 class AppModel:
     def __init__(self):
+        self.pixel_mode = None
+
         self.pixel_amount = None
         self.brightness = None
         self.saturation = None
         self.contrast = None
+
         self.image = None
         self.image_edited = None
-    
+
     def update_slider(self, name, value):
         setattr(self, name, value)
     

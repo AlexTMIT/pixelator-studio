@@ -11,8 +11,9 @@ def make_label(text):
 
 def make_slider_block(label_text, default, min_value, max_value):
     layout = QGridLayout()
-    layout.setContentsMargins(10, 14, 20, 14)
+    layout.setContentsMargins(10, 14, 20, 24)
     layout.setHorizontalSpacing(20)
+    layout.setVerticalSpacing(0)
 
     # Labels
     value_label = make_label("value")

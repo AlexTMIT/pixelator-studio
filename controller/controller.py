@@ -97,7 +97,11 @@ class AppController:
     def edit_pixelation(self, image):
         value = self.model.pixel_amount
 
-
+        # if value=0, don't pixelate
+        # if value=1, radius=1
+        # if value=100, make final image 4 pixels
+        # since image is 400x400, that means radius is = to value?
+        
         #radius = 
 
         return image
