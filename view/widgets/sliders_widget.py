@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QLabel, QWidget
+from PySide6.QtWidgets import QLabel
 from PySide6.QtGui import QFont
 from PySide6.QtCore import Signal
 
