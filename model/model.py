@@ -1,11 +1,15 @@
+from model.pixel_modes import PixelationMode
+
+
 class AppModel:
     def __init__(self):
-        self.pixel_mode = None
+        self.pixel_mode: PixelationMode = None
+        self.color_scheme: str = None
 
-        self.pixel_amount = None
-        self.brightness = None
-        self.saturation = None
-        self.contrast = None
+        self.pixel_amount: int = None
+        self.brightness: int = None
+        self.saturation: int = None
+        self.contrast: int = None
 
         self.image = None
         self.image_edited = None

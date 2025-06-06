@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QLabel, QComboBox, QWidget, QGridLayout, QSizePolicy
+from PySide6.QtWidgets import QLabel, QComboBox, QWidget, QGridLayout
 from PySide6.QtGui import QFont
 from PySide6.QtCore import Qt
 
@@ -16,15 +16,15 @@ class ColorsWidget(BorderedBox):
         grid.setVerticalSpacing(14)
 
         # ─── Row 0: “color mode:” label + combo box ──────────────────────────────────
-        label_mode = QLabel("color mode:")
-        label_mode.setFont(QFont("Minecraft", 12))
-        label_mode.setStyleSheet("color: #FBFFD9;")
-        grid.addWidget(label_mode, 0, 0, alignment=Qt.AlignVCenter | Qt.AlignLeft)
+        self.label_mode = QLabel("color mode:")
+        self.label_mode.setFont(QFont("Minecraft", 12))
+        self.label_mode.setStyleSheet("color: #FBFFD9;")
+        grid.addWidget(self.label_mode, 0, 0, alignment=Qt.AlignVCenter | Qt.AlignLeft)
 
-        combo_mode = QComboBox()
-        combo_mode.setFont(QFont("Minecraft", 12))
-        combo_mode.setCursor(Qt.PointingHandCursor)
-        combo_mode.setStyleSheet("""
+        self.combo_mode = QComboBox()
+        self.combo_mode.setFont(QFont("Minecraft", 12))
+        self.combo_mode.setCursor(Qt.PointingHandCursor)
+        self.combo_mode.setStyleSheet("""
             QComboBox {
                 border: 1px solid #FBFFD9;
                 color: #FBFFD9;
@@ -51,27 +51,25 @@ class ColorsWidget(BorderedBox):
                 color: #171514;
             }
         """)
-        # Populate with PixelationMode enum values (readable form)
         for mode in PixelationMode:
-            combo_mode.addItem(mode.name.lower().replace("_", " "))
-        combo_mode.setCurrentText("pythagorean color average")
-        grid.addWidget(combo_mode, 0, 1, alignment=Qt.AlignVCenter | Qt.AlignLeft)
+            self.combo_mode.addItem(mode.name.lower().replace("_", " "))
+        self.combo_mode.setCurrentText("pythagorean color average")
+        grid.addWidget(self.combo_mode, 0, 1, alignment=Qt.AlignVCenter | Qt.AlignLeft)
 
         spacer = QWidget()
         spacer.setFixedWidth(20)
-        grid.addWidget(spacer, 0, 2)  # Spacer between label and combo box
+        grid.addWidget(spacer, 0, 2)
 
         # ─── Row 1: “color scheme:” label + (disabled) combo box ──────────────────────
-        label_scheme = QLabel("color scheme:")
-        label_scheme.setFont(QFont("Minecraft", 12))
-        # Faded-out color for disabled label
-        label_scheme.setStyleSheet("color: #727363;")
-        grid.addWidget(label_scheme, 1, 0, alignment=Qt.AlignVCenter | Qt.AlignLeft)
+        self.label_scheme = QLabel("color scheme:")
+        self.label_scheme.setFont(QFont("Minecraft", 12))
+        self.label_scheme.setStyleSheet("color: #727363;")  # greyed‐out initially
+        grid.addWidget(self.label_scheme, 1, 0, alignment=Qt.AlignVCenter | Qt.AlignLeft)
 
-        combo_scheme = QComboBox()
-        combo_scheme.setFont(QFont("Minecraft", 12))
-        combo_scheme.setCursor(Qt.PointingHandCursor)
-        combo_scheme.setStyleSheet("""
+        self.combo_scheme = QComboBox()
+        self.combo_scheme.setFont(QFont("Minecraft", 12))
+        self.combo_scheme.setCursor(Qt.PointingHandCursor)
+        self.combo_scheme.setStyleSheet("""
             QComboBox {
                 border: 1px solid #FBFFD9;
                 color: #FBFFD9;
@@ -102,25 +100,23 @@ class ColorsWidget(BorderedBox):
                 background-color: #171514;
             }
         """)
-        combo_scheme.addItems([
+        self.combo_scheme.addItems([
             "warm beige",
             "cool gray",
             "vibrant sunset",
             "pastel mint"
         ])
-        combo_scheme.setCurrentText("warm beige")
-        # Disable so it appears greyed out
-        combo_scheme.setEnabled(False)
-        grid.addWidget(combo_scheme, 1, 1, alignment=Qt.AlignVCenter | Qt.AlignLeft)
+        self.combo_scheme.setCurrentText("warm beige")
+        self.combo_scheme.setEnabled(False)  # greyed‐out by default
+        grid.addWidget(self.combo_scheme, 1, 1, alignment=Qt.AlignVCenter | Qt.AlignLeft)
 
         grid.addWidget(spacer, 1, 2)
 
-        # ─── Insert the grid into a container and add it to the body_layout ───────────
         container = QWidget()
         container.setLayout(grid)
 
-        spacer = QWidget()
-        spacer.setFixedHeight(20)
+        spacer2 = QWidget()
+        spacer2.setFixedHeight(20)
 
         self.body_layout.addWidget(container)
-        self.body_layout.addWidget(spacer)  # Spacer
+        self.body_layout.addWidget(spacer2)
