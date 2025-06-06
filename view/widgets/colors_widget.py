@@ -53,7 +53,7 @@ class ColorsWidget(BorderedBox):
         """)
         for mode in PixelationMode:
             self.combo_mode.addItem(mode.name.lower().replace("_", " "))
-        self.combo_mode.setCurrentText("pythagorean color average")
+        self.combo_mode.setCurrentText("schematic approximation")
         grid.addWidget(self.combo_mode, 0, 1, alignment=Qt.AlignVCenter | Qt.AlignLeft)
 
         spacer = QWidget()
