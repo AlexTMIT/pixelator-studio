@@ -1,5 +1,7 @@
 from PySide6.QtWidgets import QFileDialog
 from PIL import Image
+import colorsys
+import numpy as np
 
 class AppController:
     def __init__(self, model, view):
@@ -79,36 +81,51 @@ class AppController:
             return
         
         pixelated_image = self.edit_pixelation(image)
-        brightened_image = self.edit_brightness(image)
-        saturated_image = self.edit_saturation(image)
-        # contrast_image = self.edit_contrast(image)
+        brightened_image = self.edit_brightness(pixelated_image)
+        saturated_image = self.edit_saturation(brightened_image)
+        contrasted_image = self.edit_contrast(saturated_image)
 
-        self.model.image_edited = image
-        self.view.preview.set_image(brightened_image)
+        self.model.image_edited = contrasted_image
+        self.view.preview.set_image(contrasted_image)
+
+    def calculate_factor(self, raw_value):
+        if raw_value < 50:
+            return raw_value / 50 
+        else:
+            return 1 + 4 * ((raw_value - 50) / 50) ** 2
 
     def edit_pixelation(self, image):
         value = self.model.pixel_amount
-        pixel_size = max(1, value // 10)  # Ensure pixel size is at least 1
         return image
 
     def edit_brightness(self, image):
-        raw_value = self.model.brightness
-
-        if raw_value < 50:
-            factor = raw_value / 50 
-        else:
-            factor = 1 + 4 * ((raw_value - 50) / 50) **2  # nonlinear brighten
-
-        for y in range(image.height):
-            for x in range(image.width):
-                r, g, b = image.getpixel((x, y))
-                r = max(0, min(255, int(r * factor)))
-                g = max(0, min(255, int(g * factor)))
-                b = max(0, min(255, int(b * factor)))
-                image.putpixel((x, y), (r, g, b))
-
-        return image
+        factor = self.calculate_factor(self.model.brightness)
+        arr = np.array(image, dtype=np.float32)
+        arr *= factor
+        arr = np.clip(arr, 0, 255).astype(np.uint8)
+        return Image.fromarray(arr)
     
     def edit_saturation(self, image):
-        value = self.model.saturation
+        factor = self.calculate_factor(self.model.saturation)
+        # convert to np with float32, scales values 0–255 to 0.0–1.0.
+        arr = np.array(image, dtype=np.float32) / 255.0 
+        r, g, b = arr[..., 0], arr[..., 1], arr[..., 2]
+
+        hls = np.vectorize(colorsys.rgb_to_hls)(r, g, b)
+        h, l, s = hls
+
+        s = np.clip(s * factor, 0, 1)
+
+        rgb = np.vectorize(colorsys.hls_to_rgb)(h, l, s)
+        r, g, b = rgb
+        out = np.stack([r, g, b], axis=-1) * 255
+        return Image.fromarray(out.astype(np.uint8))
+
+    def edit_contrast(self, image):
+        factor = self.calculate_factor(self.model.contrast)
+        arr = np.array(image, dtype=np.float32)
+        arr = 128 + (arr - 128) * factor
+        arr = np.clip(arr, 0, 255).astype(np.uint8)
+        return Image.fromarray(arr)
+
         return image
