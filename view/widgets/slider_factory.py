@@ -9,7 +9,7 @@ def make_label(text):
     label.setAlignment(Qt.AlignLeft | Qt.AlignTop)
     return label
 
-def make_slider_block(label_text, default=50, min_value=0, max_value=100):
+def make_slider_block(label_text, default, min_value, max_value):
     layout = QGridLayout()
     layout.setContentsMargins(10, 14, 20, 14)
     layout.setHorizontalSpacing(20)

@@ -22,13 +22,13 @@ class AppController:
         self.view.options.save_as_button.clicked.connect(self.save_image)
 
     def reset_parameters(self):
-        self.model.pixel_amount = 50
+        self.model.pixel_amount = 0
         self.model.brightness = 50
         self.model.saturation = 50
         self.model.contrast = 50
 
         sliders = self.view.sliders
-        sliders.pixelAmountSlider.setValue(50)
+        sliders.pixelAmountSlider.setValue(0)
         sliders.brightnessSlider.setValue(50)
         sliders.saturationSlider.setValue(50)
         sliders.contrastSlider.setValue(50)
@@ -96,6 +96,10 @@ class AppController:
 
     def edit_pixelation(self, image):
         value = self.model.pixel_amount
+
+
+        #radius = 
+
         return image
 
     def edit_brightness(self, image):
@@ -107,14 +111,13 @@ class AppController:
     
     def edit_saturation(self, image):
         factor = self.calculate_factor(self.model.saturation)
-        # convert to np with float32, scales values 0–255 to 0.0–1.0.
-        arr = np.array(image, dtype=np.float32) / 255.0 
-        r, g, b = arr[..., 0], arr[..., 1], arr[..., 2]
+        arr = np.array(image, dtype=np.float32) / 255.0 # convert between 0 and 1
+        r, g, b = arr[..., 0], arr[..., 1], arr[..., 2] # extract rgb
 
         hls = np.vectorize(colorsys.rgb_to_hls)(r, g, b)
         h, l, s = hls
 
-        s = np.clip(s * factor, 0, 1)
+        s = np.clip(s * factor, 0, 1) # adjust saturation
 
         rgb = np.vectorize(colorsys.hls_to_rgb)(h, l, s)
         r, g, b = rgb
@@ -127,5 +130,3 @@ class AppController:
         arr = 128 + (arr - 128) * factor
         arr = np.clip(arr, 0, 255).astype(np.uint8)
         return Image.fromarray(arr)
-
-        return image

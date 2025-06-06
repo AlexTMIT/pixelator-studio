@@ -1,9 +1,9 @@
 class AppModel:
     def __init__(self):
-        self.pixel_amount = 50
-        self.brightness = 50
-        self.saturation = 50
-        self.contrast = 50
+        self.pixel_amount = None
+        self.brightness = None
+        self.saturation = None
+        self.contrast = None
         self.image = None
         self.image_edited = None
     
