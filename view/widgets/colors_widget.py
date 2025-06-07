@@ -9,21 +9,74 @@ class ColorsWidget(BorderedBox):
     def __init__(self):
         super().__init__(400, 250, "colors")
 
+        grid = self.make_grid()
+
+        # color mode
+        self.label_mode = self.make_label_mode()
+        grid.addWidget(self.label_mode, 0, 0, alignment=Qt.AlignVCenter | Qt.AlignLeft)
+        self.combo_mode = self.make_combo_mode()
+        grid.addWidget(self.combo_mode, 0, 1, alignment=Qt.AlignVCenter | Qt.AlignLeft)
+        grid.addWidget(self.make_spacer(), 0, 2)
+
+        # color scheme
+        self.label_scheme = self.make_label_scheme()
+        grid.addWidget(self.label_scheme, 1, 0, alignment=Qt.AlignVCenter | Qt.AlignLeft)
+        self.combo_scheme = self.make_combo_scheme()
+        grid.addWidget(self.combo_scheme, 1, 1, alignment=Qt.AlignVCenter | Qt.AlignLeft)
+        grid.addWidget(self.make_spacer(), 1, 2)
+
+        container = QWidget()
+        container.setLayout(grid)
+
+        self.body_layout.addWidget(container)
+        self.body_layout.addWidget(self.make_spacer(width=0, height=30))
+
+    def make_grid(self):
         grid = QGridLayout()
         grid.setContentsMargins(22, 0, 20, 14)
         grid.setHorizontalSpacing(20)
         grid.setVerticalSpacing(14)
+        return grid
+    
+    def make_label_mode(self):
+        label_mode = QLabel("color mode:")
+        label_mode.setFont(QFont("Minecraft", 12))
+        label_mode.setStyleSheet("color: #FBFFD9;")
+        return label_mode
+    
+    def make_combo_mode(self):
+        combo_mode = QComboBox()
+        combo_mode.setFont(QFont("Minecraft", 12))
+        combo_mode.setCursor(Qt.PointingHandCursor)
+        combo_mode.setStyleSheet(self.mode_style())
+        for mode in PixelationMode:
+            combo_mode.addItem(mode.name.lower().replace("_", " "), mode)
+        return combo_mode
+    
+    def make_spacer(self, width=20, height=0):
+        spacer = QWidget()
+        spacer.setFixedWidth(width)
+        spacer.setFixedHeight(height)
+        return spacer
 
-        # ─── Row 0: “color mode:” label + combo box ──────────────────────────────────
-        self.label_mode = QLabel("color mode:")
-        self.label_mode.setFont(QFont("Minecraft", 12))
-        self.label_mode.setStyleSheet("color: #FBFFD9;")
-        grid.addWidget(self.label_mode, 0, 0, alignment=Qt.AlignVCenter | Qt.AlignLeft)
+    def make_label_scheme(self):
+        label_scheme = QLabel("color scheme:")
+        label_scheme.setFont(QFont("Minecraft", 12))
+        label_scheme.setStyleSheet("color: #727363;")
+        return label_scheme
+    
+    def make_combo_scheme(self):
+        combo_scheme = QComboBox()
+        combo_scheme.setFont(QFont("Minecraft", 12))
+        combo_scheme.setCursor(Qt.PointingHandCursor)
+        combo_scheme.setStyleSheet(self.scheme_style())
+        for scheme in ColorScheme:
+            combo_scheme.addItem(scheme.value, scheme)
+        combo_scheme.setCurrentText(ColorScheme.first().value)
+        return combo_scheme
 
-        self.combo_mode = QComboBox()
-        self.combo_mode.setFont(QFont("Minecraft", 12))
-        self.combo_mode.setCursor(Qt.PointingHandCursor)
-        self.combo_mode.setStyleSheet("""
+    def mode_style(self):
+        return """
             QComboBox {
                 border: 1px solid #FBFFD9;
                 color: #FBFFD9;
@@ -49,25 +102,10 @@ class ColorsWidget(BorderedBox):
                 background-color: #FBFFD9;
                 color: #171514;
             }
-        """)
-        for mode in PixelationMode:
-            self.combo_mode.addItem(mode.name.lower().replace("_", " "), mode)
-        grid.addWidget(self.combo_mode, 0, 1, alignment=Qt.AlignVCenter | Qt.AlignLeft)
+        """
 
-        spacer = QWidget()
-        spacer.setFixedWidth(20)
-        grid.addWidget(spacer, 0, 2)
-
-        # ─── Row 1: “color scheme:” label + (disabled) combo box ──────────────────────
-        self.label_scheme = QLabel("color scheme:")
-        self.label_scheme.setFont(QFont("Minecraft", 12))
-        self.label_scheme.setStyleSheet("color: #727363;")  # greyed‐out initially
-        grid.addWidget(self.label_scheme, 1, 0, alignment=Qt.AlignVCenter | Qt.AlignLeft)
-
-        self.combo_scheme = QComboBox()
-        self.combo_scheme.setFont(QFont("Minecraft", 12))
-        self.combo_scheme.setCursor(Qt.PointingHandCursor)
-        self.combo_scheme.setStyleSheet("""
+    def scheme_style(self):
+        return """
             QComboBox {
                 border: 1px solid #FBFFD9;
                 color: #FBFFD9;
@@ -98,19 +136,4 @@ class ColorsWidget(BorderedBox):
                 color: #727363;
                 background-color: #171514;
             }
-        """)
-        for scheme in ColorScheme:
-            self.combo_scheme.addItem(scheme.value, scheme)
-        self.combo_scheme.setCurrentText(ColorScheme.first().value)
-        grid.addWidget(self.combo_scheme, 1, 1, alignment=Qt.AlignVCenter | Qt.AlignLeft)
-
-        grid.addWidget(spacer, 1, 2)
-
-        container = QWidget()
-        container.setLayout(grid)
-
-        spacer2 = QWidget()
-        spacer2.setFixedHeight(20)
-
-        self.body_layout.addWidget(container)
-        self.body_layout.addWidget(spacer2)
+        """
