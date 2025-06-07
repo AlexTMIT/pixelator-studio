@@ -62,9 +62,17 @@ class ColorsWidget(BorderedBox):
     def make_label_scheme(self):
         label_scheme = QLabel("color scheme:")
         label_scheme.setFont(QFont("Minecraft", 12))
-        label_scheme.setStyleSheet("color: #727363;")
+        label_scheme.setStyleSheet("color: #FBFFD9;")
         return label_scheme
     
+    def set_enabled_scheme(self, enabled: bool):
+        if enabled:
+            self.label_scheme.setStyleSheet("color: #FBFFD9;")
+            self.combo_scheme.setEnabled(True)
+        else:
+            self.label_scheme.setStyleSheet("color: #727363;")
+            self.combo_scheme.setEnabled(False)
+
     def make_combo_scheme(self):
         combo_scheme = QComboBox()
         combo_scheme.setFont(QFont("Minecraft", 12))

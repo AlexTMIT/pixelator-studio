@@ -35,11 +35,10 @@ class AppController:
     def _on_mode_changed(self, idx: int):
         mode = self.view.colors.combo_mode.itemData(idx)
         self.model.pixel_mode = mode
-        self.view.colors.combo_scheme.setEnabled(mode == PixelationMode.SCHEMATIC_APPROXIMATION)
+        self.view.colors.set_enabled_scheme(mode == PixelationMode.SCHEMATIC_APPROXIMATION)
         self.render_image()
 
     def _on_scheme_changed(self, idx: int):
-        if not self.view.colors.combo_scheme.isEnabled(): return
         scheme = self.view.colors.combo_scheme.itemData(idx)
         self.model.color_scheme = scheme
         self.render_image()
