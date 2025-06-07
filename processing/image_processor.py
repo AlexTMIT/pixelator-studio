@@ -33,6 +33,8 @@ class ImageProcessor:
         return Image.fromarray(out)
 
     def pixelate(self, mode: PixelationMode, amount: int, image: Image.Image, color_scheme: ColorScheme) -> Image.Image:
+        amount = int((amount+42)*0.70) # ugly offset fix
+        
         if mode == PixelationMode.PYTHAGOREAN_COLOR_AVERAGE:
             img = self.pythagorean_color_average(amount, image)
         elif mode == PixelationMode.MEDIAN_COLOR:
