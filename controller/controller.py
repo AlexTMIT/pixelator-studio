@@ -112,20 +112,3 @@ class AppController:
             return raw_value / 50
         else:
             return 1 + 4 * ((raw_value - 50) / 50) ** 2
-
-    def edit_pixelation(self, image: Image.Image) -> Image.Image:
-        mode = self.model.pixel_mode
-        amount = self.model.pixel_amount or 0
-
-        if amount == 0:
-            return image
-
-        match mode:
-            case PixelationMode.PYTHAGOREAN_COLOR_AVERAGE:
-                return self.pythagorean_color_average(amount, image)
-            case PixelationMode.SCHEMATIC_APPROXIMATION:
-                return self.schematic_approximation(amount, image)
-            case PixelationMode.MEDIAN_COLOR:
-                return self.median_color_average(amount, image)
-            case _:
-                return image
