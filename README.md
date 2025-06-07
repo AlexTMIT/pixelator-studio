@@ -1,5 +1,5 @@
 # Clone the project
-git clone ...
+git clone https://github.com/AlexTMIT/pixelator-studio
 
 # Go into the folder
 cd pixelator-studio
