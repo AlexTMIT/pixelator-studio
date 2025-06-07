@@ -10,18 +10,33 @@ def make_label(text):
     return label
 
 def make_slider_block(label_text, default, min_value, max_value):
-    layout = QGridLayout()
-    layout.setContentsMargins(10, 14, 20, 24)
-    layout.setHorizontalSpacing(20)
-    layout.setVerticalSpacing(0)
-
-    # Labels
+    layout = make_grid()
+    
     value_label = make_label("value")
     label = make_label(label_text)
     value_number = make_label(str(default))
     value_number.setFixedWidth(30)
 
-    # Slider
+    slider = make_slider(default, min_value, max_value)
+    slider.valueChanged.connect(lambda val: value_number.setText(str(val)))
+
+    layout.addWidget(value_label,     0, 0)
+    layout.addWidget(label,           0, 1)
+    layout.addWidget(value_number, 1, 0, alignment=Qt.AlignVCenter)
+    layout.addWidget(slider, 1, 1, alignment=Qt.AlignVCenter)
+
+    container = QWidget()
+    container.setLayout(layout)
+    return container, slider
+
+def make_grid():
+    layout = QGridLayout()
+    layout.setContentsMargins(10, 14, 20, 24)
+    layout.setHorizontalSpacing(20)
+    layout.setVerticalSpacing(0)
+    return layout
+
+def make_slider(default, min_value, max_value):
     slider = QSlider(Qt.Horizontal)
     slider.setMinimum(min_value)
     slider.setMaximum(max_value)
@@ -48,14 +63,4 @@ def make_slider_block(label_text, default, min_value, max_value):
             background: #FBFFD9;
         }
     """)
-
-    slider.valueChanged.connect(lambda val: value_number.setText(str(val)))
-
-    layout.addWidget(value_label,     0, 0)
-    layout.addWidget(label,           0, 1)
-    layout.addWidget(value_number, 1, 0, alignment=Qt.AlignVCenter)
-    layout.addWidget(slider, 1, 1, alignment=Qt.AlignVCenter)
-
-    container = QWidget()
-    container.setLayout(layout)
-    return container, slider
+    return slider
