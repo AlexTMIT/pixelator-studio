@@ -99,10 +99,10 @@ class AppController:
         pm = self.model.pixel_mode
         amt = self.model.pixel_amount or 0
 
-        img = self.processor.pixelate(pm, amt, img, self.model.color_scheme)
         img = self.processor.edit_brightness(img, self.model.brightness)
         img = self.processor.edit_saturation(img, self.model.saturation)
         img = self.processor.edit_contrast(img, self.model.contrast)
+        img = self.processor.pixelate(pm, amt, img, self.model.color_scheme)
 
         self.model.image_edited = img
         self.view.preview.set_image(img)
