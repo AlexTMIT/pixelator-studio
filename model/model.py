@@ -3,8 +3,8 @@ import numpy as np
 
 class AppModel:
     def __init__(self):
-        self.pixel_mode: PixelationMode = None
-        self.color_scheme: ColorScheme = ColorScheme.WARM_BEIGE
+        self.pixel_mode: PixelationMode = PixelationMode.SCHEMATIC_APPROXIMATION
+        self.color_scheme: ColorScheme   = ColorScheme.first()
 
         self.pixel_amount: int = None
         self.brightness: int = None

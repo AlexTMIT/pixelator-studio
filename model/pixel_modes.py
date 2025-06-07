@@ -8,8 +8,18 @@ class PixelationMode(Enum):
     #DOMINANT_COLOR = auto()
 
 class ColorScheme(Enum):
-    WARM_BEIGE = "warm_beige"
-    COOL_PASTEL = "cool_pastel"
+    WARM_BEIGE   = "warm beige"
+    COOL_GRAY    = "cool gray"
+    VIBRANT_SUNSET = "vibrant sunset"
+    PASTEL_MINT  = "pastel mint"
+
+    @classmethod
+    def names(cls) -> list[str]:
+        return [member.value for member in cls]
+
+    @classmethod
+    def first(cls) -> "ColorScheme":
+        return next(iter(cls))
 
     def palette(self) -> np.ndarray:
         schemes = {
@@ -20,14 +30,20 @@ class ColorScheme(Enum):
                 (131, 105,  83),
                 (224, 214, 195),
             ],
-            ColorScheme.COOL_PASTEL: [
-                (200, 225, 255),
-                (180, 210, 230),
-                (160, 195, 205),
+            ColorScheme.COOL_GRAY: [
+                (200, 200, 200),
+                (160, 160, 160),
+                (120, 120, 120),
+            ],
+            ColorScheme.VIBRANT_SUNSET: [
+                (255, 94, 77),
+                (255, 149, 128),
+                (255, 205, 178),
+            ],
+            ColorScheme.PASTEL_MINT: [
+                (189, 252, 201),
+                (152, 232, 197),
+                (109, 230, 181),
             ],
         }
         return np.array(schemes[self], dtype=np.float32)
-    
-    @classmethod
-    def names(cls) -> list[str]:
-        return [member.value.lower().replace("_", " ") for member in cls]

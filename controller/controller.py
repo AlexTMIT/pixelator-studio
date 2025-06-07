@@ -1,4 +1,5 @@
 import math
+from typing import Callable
 from PySide6.QtWidgets import QFileDialog
 from PIL import Image
 import colorsys
@@ -14,6 +15,7 @@ class AppController:
         self._connect_signals()
 
     def _connect_signals(self):
+        # Sliders
         sliders = self.view.sliders
         sliders.pixelAmountChanged.connect(lambda val: self._slider_changed("pixel_amount", val))
         sliders.brightnessChanged.connect(lambda val: self._slider_changed("brightness", val))
@@ -24,12 +26,26 @@ class AppController:
         self.view.options.open_button.clicked.connect(self.open_image)
         self.view.options.save_as_button.clicked.connect(self.save_image)
 
-        # ─── HOOK UP COLOR MODE / SCHEME ───────────────────────────────────────────────
-        cw = self.view.colors
-        cw.combo_mode.currentTextChanged.connect(self._color_mode_changed)
-        cw.combo_scheme.currentTextChanged.connect(self._color_scheme_changed)
-        # Initialize both combo states on startup:
-        self._color_mode_changed(cw.combo_mode.currentText())
+        # Color mode and scheme
+        self.view.colors.combo_mode.currentIndexChanged.connect(self._on_mode_changed)
+        self.view.colors.combo_scheme.currentIndexChanged.connect(self._on_scheme_changed)
+
+    def _on_slider(self, name: str, val: int):
+        self.model.update_slider(name, val)
+        self.render_image()
+
+    def _on_mode_changed(self, idx: int):
+        mode = self.view.colors.combo_mode.itemData(idx)
+        # now mode is never None
+        self.model.pixel_mode = mode
+        self.view.colors.combo_scheme.setEnabled(mode == PixelationMode.SCHEMATIC_APPROXIMATION)
+        self.render_image()
+
+    def _on_scheme_changed(self, idx: int):
+        if self.view.colors.combo_scheme.isEnabled():
+            scheme = self.view.colors.combo_scheme.itemData(idx)
+            self.model.color_scheme = scheme
+            self.render_image()
 
     def reset_parameters(self):
         self.model.pixel_amount = 0
@@ -85,33 +101,6 @@ class AppController:
         self.model.update_slider(name, value)
         self.render_image()
 
-    def _color_mode_changed(self, new_text: str):
-        key = new_text.replace(" ", "_").upper()
-        try:
-            self.model.pixel_mode = PixelationMode[key]
-        except KeyError:
-            # If it doesn't match exactly, just leave as None or log
-            self.model.pixel_mode = None
-
-        # 2) Enable/disable combo_scheme and update label color
-        cw = self.view.colors
-        if new_text == "schematic approximation":
-            cw.combo_scheme.setEnabled(True)
-            cw.label_scheme.setStyleSheet("color: #FBFFD9;")
-        else:
-            cw.combo_scheme.setEnabled(False)
-            cw.label_scheme.setStyleSheet("color: #727363;")
-            # Clear any previously chosen scheme if disabling
-            self.model.color_scheme = None
-
-        self.render_image()
-
-    def _color_scheme_changed(self, scheme_text: str):
-        # Only store when the combo is enabled
-        if self.view.colors.combo_scheme.isEnabled():
-            self.model.color_scheme = scheme_text
-            self.render_image()
-
     def render_image(self):
         img = self.model.image.copy()
         if img is None:
@@ -156,76 +145,83 @@ class AppController:
             num_blocks = int(min_blocks + (max_blocks - min_blocks) * (1 - normalized) ** 2)
             return max(1, max_dim // num_blocks)
 
-    def pythagorean_color_average(self, amount: int, image: Image.Image) -> Image.Image:
-        arr = np.asarray(image, dtype=np.float32)
+    def process_blocks(self, arr: np.ndarray, ps: int,
+                   init_fn: Callable[[np.ndarray], np.ndarray],
+                   select_fn: Callable[[np.ndarray, np.ndarray], np.ndarray]
+                  ) -> Image.Image:
+        """
+        arr: H×W×3 float32
+        ps: block size
+        init_fn: e.g. lambda blk: blk       # identity for mean/median
+                or lambda blk: blk**2     # square for RMS
+        select_fn: (flattened_pixels, block_mean) -> RGB(3,)
+        """
         h, w, _ = arr.shape
-        ps = self.map_amount_to_pixel_size(amount, max(h, w))
-        if ps <= 1:
-            return image
-
         by, bx = math.ceil(h/ps), math.ceil(w/ps)
         pad_h, pad_w = by*ps - h, bx*ps - w
 
-        # padding
-        arr_sq = np.pad(arr**2,
-                        ((0, pad_h), (0, pad_w), (0, 0)),
-                        mode='constant', constant_values=0)
+        # edge‐pad
+        a = np.pad(arr, ((0,pad_h),(0,pad_w),(0,0)), mode='edge')
+        blocks = (a
+                .reshape(by, ps, bx, ps, 3)
+                .transpose(0,2,1,3,4))      # [by, bx, ps, ps, 3]
 
-        blocks = arr_sq.reshape(by, ps, bx, ps, 3)
-        sums = blocks.sum(axis=(1, 3)) 
+        flat = blocks.reshape(by, bx, ps*ps, 3)     # [by, bx, P, 3]
+        proc = init_fn(flat)                        # same shape
+        means = proc.mean(axis=2, keepdims=True)    # [by, bx, 1, 3]
 
-        counts = np.full((by, bx), ps*ps, dtype=np.float32)
-        if pad_h:
-            counts[-1, :] = (h % ps or ps) * ps
-        if pad_w:
-            counts[:, -1] = ps * (w % ps or ps)
-        if pad_h and pad_w:
-            counts[-1, -1] = (h % ps or ps) * (w % ps or ps)
+        # select one RGB per block:
+        # vectorize over by,bx:
+        rep = np.zeros((by, bx, 3), dtype=np.float32)
+        for i in range(by):
+            for j in range(bx):
+                rep[i,j] = select_fn(proc[i,j], means[i,j,0])
 
-        rms = np.sqrt(sums / counts[..., None])
-
-        # expand back up to image size
-        out = np.kron(rms, np.ones((ps, ps, 1)))
-        out = np.clip(out[:h, :w], 0, 255).astype(np.uint8)
-
-        return Image.fromarray(out)
-
-    def schematic_approximation(self, amount: int, image: Image.Image) -> Image.Image:
-        scheme = self.model.color_scheme
-        return image
-    
-    def median_color_average(self, amount: int, image: Image.Image) -> Image.Image:
-        arr = np.asarray(image, dtype=np.float32)
-        h, w, _ = arr.shape
-        ps = self.map_amount_to_pixel_size(amount, max(h, w))
-        if ps <= 1:
-            return image
-
-        # how many blocks in each dimension
-        by = math.ceil(h / ps)
-        bx = math.ceil(w / ps)
-        pad_h = by * ps - h
-        pad_w = bx * ps - w
-
-        arr_p = np.pad(arr,
-                    ((0, pad_h), (0, pad_w), (0, 0)),
-                    mode='edge')
-
-        blocks = arr_p.reshape(by, ps, bx, ps, 3).transpose(0, 2, 1, 3, 4)
-        flattened_blocks = blocks.reshape(by, bx, ps * ps, 3)
-
-        mean_cols = flattened_blocks.mean(axis=2, keepdims=True)
-        squared_dist_to_mean = ((flattened_blocks - mean_cols) ** 2).sum(axis=3)
-
-        # find the pixel index with minimal distance in each block
-        idx = squared_dist_to_mean.argmin(axis=2)  # shape (by, bx)
-        rows = np.arange(by)[:, None]
-        cols = np.arange(bx)[None, :]
-        rep = flattened_blocks[rows, cols, idx]   # shape (by, bx, 3)
-
+        # expand back to full image:
         expanded = rep.repeat(ps, axis=0).repeat(ps, axis=1)
         out = np.clip(expanded[:h, :w], 0, 255).astype(np.uint8)
         return Image.fromarray(out)
+
+    def pythagorean_color_average(self, amount, image):
+        arr = np.asarray(image, np.float32)
+        ps = self.map_amount_to_pixel_size(amount, max(*arr.shape[:2]))
+        if ps<=1: return image
+
+        # init: square; select: take sqrt(mean)
+        return self.process_blocks(
+            arr, ps,
+            init_fn=lambda blk: blk**2,
+            select_fn=lambda blk, m: np.sqrt(m)   # m is already mean of squares
+        )
+
+    def median_color_average(self, amount, image):
+        arr = np.asarray(image, np.float32)
+        ps = self.map_amount_to_pixel_size(amount, max(*arr.shape[:2]))
+        if ps<=1: return image
+
+        # init: identity; select: pick real pixel closest to block mean
+        def pick_median(blk, m):
+            # blk: P×3, m: 3-vector
+            d = ((blk - m)**2).sum(axis=1)
+            return blk[d.argmin()]
+        return self.process_blocks(arr, ps,
+                                init_fn=lambda blk: blk,
+                                select_fn=pick_median)
+
+    def schematic_approximation(self, amount, image):
+        arr = np.asarray(image, np.float32)
+        ps = self.map_amount_to_pixel_size(amount, max(*arr.shape[:2]))
+        if ps<=1: return image
+
+        palette = self.model.color_scheme.palette()
+        # init: identity; select: pick nearest palette color
+        def pick_palette(blk, m):
+            d = ((palette - m)**2).sum(axis=1)
+            return palette[d.argmin()]
+
+        return self.process_blocks(arr, ps,
+                                init_fn=lambda blk: blk,
+                                select_fn=pick_palette)
 
     def edit_brightness(self, image: Image.Image) -> Image.Image:
         factor = self.calculate_factor(self.model.brightness)

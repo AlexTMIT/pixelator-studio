@@ -51,8 +51,7 @@ class ColorsWidget(BorderedBox):
             }
         """)
         for mode in PixelationMode:
-            self.combo_mode.addItem(mode.name.lower().replace("_", " "))
-        self.combo_mode.setCurrentText("schematic approximation")
+            self.combo_mode.addItem(mode.name.lower().replace("_", " "), mode)
         grid.addWidget(self.combo_mode, 0, 1, alignment=Qt.AlignVCenter | Qt.AlignLeft)
 
         spacer = QWidget()
@@ -100,9 +99,9 @@ class ColorsWidget(BorderedBox):
                 background-color: #171514;
             }
         """)
-        schemes = ColorScheme.names()
-        self.combo_scheme.addItems(schemes)
-        self.combo_scheme.setCurrentText(schemes[0])
+        for scheme in ColorScheme:
+            self.combo_scheme.addItem(scheme.value, scheme)
+        self.combo_scheme.setCurrentText(ColorScheme.first().value)
         grid.addWidget(self.combo_scheme, 1, 1, alignment=Qt.AlignVCenter | Qt.AlignLeft)
 
         grid.addWidget(spacer, 1, 2)
