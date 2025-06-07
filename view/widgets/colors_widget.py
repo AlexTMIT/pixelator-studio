@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QLabel, QComboBox, QWidget, QGridLayout
 from PySide6.QtGui import QFont
 from PySide6.QtCore import Qt
 
-from model.pixel_modes import PixelationMode
+from model.pixel_modes import ColorScheme, PixelationMode
 from .bordered_box import BorderedBox
 
 class ColorsWidget(BorderedBox):
@@ -100,14 +100,9 @@ class ColorsWidget(BorderedBox):
                 background-color: #171514;
             }
         """)
-        self.combo_scheme.addItems([
-            "warm beige",
-            "cool gray",
-            "vibrant sunset",
-            "pastel mint"
-        ])
-        self.combo_scheme.setCurrentText("warm beige")
-        self.combo_scheme.setEnabled(False)  # greyed‐out by default
+        schemes = ColorScheme.names()
+        self.combo_scheme.addItems(schemes)
+        self.combo_scheme.setCurrentText(schemes[0])
         grid.addWidget(self.combo_scheme, 1, 1, alignment=Qt.AlignVCenter | Qt.AlignLeft)
 
         grid.addWidget(spacer, 1, 2)

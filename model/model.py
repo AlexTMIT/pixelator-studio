@@ -1,9 +1,10 @@
-from model.pixel_modes import PixelationMode
+from model.pixel_modes import ColorScheme, PixelationMode
+import numpy as np
 
 class AppModel:
     def __init__(self):
         self.pixel_mode: PixelationMode = None
-        self.color_scheme: str = None
+        self.color_scheme: ColorScheme = ColorScheme.WARM_BEIGE
 
         self.pixel_amount: int = None
         self.brightness: int = None

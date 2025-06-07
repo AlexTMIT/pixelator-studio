@@ -191,7 +191,7 @@ class AppController:
         return Image.fromarray(out)
 
     def schematic_approximation(self, amount: int, image: Image.Image) -> Image.Image:
-        scheme = self.model.color_scheme or "warm beige"
+        scheme = self.model.color_scheme
         return image
     
     def median_color_average(self, amount: int, image: Image.Image) -> Image.Image:
