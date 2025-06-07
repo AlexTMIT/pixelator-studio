@@ -1,4 +1,4 @@
-# controller/controller.py
+import math
 from PySide6.QtWidgets import QFileDialog
 from PIL import Image
 import colorsys
@@ -86,8 +86,7 @@ class AppController:
         self.render_image()
 
     def _color_mode_changed(self, new_text: str):
-        # 1) Update the enum in model
-        key = new_text.replace(" ", "_").upper()  # e.g. "pythagorean color average" → "PYTHAGOREAN_COLOR_AVERAGE"
+        key = new_text.replace(" ", "_").upper()
         try:
             self.model.pixel_mode = PixelationMode[key]
         except KeyError:
@@ -146,19 +145,87 @@ class AppController:
             case PixelationMode.SCHEMATIC_APPROXIMATION:
                 return self.schematic_approximation(amount, image)
             case PixelationMode.MEDIAN_COLOR:
-                return self.median_color(amount, image)
+                return self.median_color_average(amount, image)
             case _:
                 return image
 
+    def map_amount_to_pixel_size(self, amount, max_dim=400):
+            min_blocks = 1
+            max_blocks = 400
+            normalized = amount / 100
+            num_blocks = int(min_blocks + (max_blocks - min_blocks) * (1 - normalized) ** 2)
+            return max(1, max_dim // num_blocks)
+
     def pythagorean_color_average(self, amount: int, image: Image.Image) -> Image.Image:
-        return image
-    
+        arr = np.asarray(image, dtype=np.float32)
+        h, w, _ = arr.shape
+        ps = self.map_amount_to_pixel_size(amount, max(h, w))
+        if ps <= 1:
+            return image
+
+        by, bx = math.ceil(h/ps), math.ceil(w/ps)
+        pad_h, pad_w = by*ps - h, bx*ps - w
+
+        # padding
+        arr_sq = np.pad(arr**2,
+                        ((0, pad_h), (0, pad_w), (0, 0)),
+                        mode='constant', constant_values=0)
+
+        blocks = arr_sq.reshape(by, ps, bx, ps, 3)
+        sums = blocks.sum(axis=(1, 3)) 
+
+        counts = np.full((by, bx), ps*ps, dtype=np.float32)
+        if pad_h:
+            counts[-1, :] = (h % ps or ps) * ps
+        if pad_w:
+            counts[:, -1] = ps * (w % ps or ps)
+        if pad_h and pad_w:
+            counts[-1, -1] = (h % ps or ps) * (w % ps or ps)
+
+        rms = np.sqrt(sums / counts[..., None])
+
+        # expand back up to image size
+        out = np.kron(rms, np.ones((ps, ps, 1)))
+        out = np.clip(out[:h, :w], 0, 255).astype(np.uint8)
+
+        return Image.fromarray(out)
+
     def schematic_approximation(self, amount: int, image: Image.Image) -> Image.Image:
         scheme = self.model.color_scheme or "warm beige"
         return image
     
-    def median_color(self, amount: int, image: Image.Image) -> Image.Image:
-        return image
+    def median_color_average(self, amount: int, image: Image.Image) -> Image.Image:
+        arr = np.asarray(image, dtype=np.float32)
+        h, w, _ = arr.shape
+        ps = self.map_amount_to_pixel_size(amount, max(h, w))
+        if ps <= 1:
+            return image
+
+        # how many blocks in each dimension
+        by = math.ceil(h / ps)
+        bx = math.ceil(w / ps)
+        pad_h = by * ps - h
+        pad_w = bx * ps - w
+
+        arr_p = np.pad(arr,
+                    ((0, pad_h), (0, pad_w), (0, 0)),
+                    mode='edge')
+
+        blocks = arr_p.reshape(by, ps, bx, ps, 3).transpose(0, 2, 1, 3, 4)
+        flattened_blocks = blocks.reshape(by, bx, ps * ps, 3)
+
+        mean_cols = flattened_blocks.mean(axis=2, keepdims=True)
+        squared_dist_to_mean = ((flattened_blocks - mean_cols) ** 2).sum(axis=3)
+
+        # find the pixel index with minimal distance in each block
+        idx = squared_dist_to_mean.argmin(axis=2)  # shape (by, bx)
+        rows = np.arange(by)[:, None]
+        cols = np.arange(bx)[None, :]
+        rep = flattened_blocks[rows, cols, idx]   # shape (by, bx, 3)
+
+        expanded = rep.repeat(ps, axis=0).repeat(ps, axis=1)
+        out = np.clip(expanded[:h, :w], 0, 255).astype(np.uint8)
+        return Image.fromarray(out)
 
     def edit_brightness(self, image: Image.Image) -> Image.Image:
         factor = self.calculate_factor(self.model.brightness)

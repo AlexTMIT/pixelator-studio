@@ -1,6 +1,5 @@
 from model.pixel_modes import PixelationMode
 
-
 class AppModel:
     def __init__(self):
         self.pixel_mode: PixelationMode = None
