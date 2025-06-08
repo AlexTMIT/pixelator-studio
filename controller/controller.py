@@ -19,6 +19,10 @@ class AppController:
         sliders.brightnessChanged.connect(lambda val: self._update_and_render("brightness", val))
         sliders.saturationChanged.connect(lambda val: self._update_and_render("saturation", val))
         sliders.contrastChanged.connect(lambda val: self._update_and_render("contrast", val))
+        sliders.pixelAmountResetRequested.connect(lambda: self._reset_slider(sliders.pixelAmountSlider))
+        sliders.brightnessResetRequested.connect(lambda: self._reset_slider(sliders.brightnessSlider))
+        sliders.saturationResetRequested.connect(lambda: self._reset_slider(sliders.saturationSlider))
+        sliders.contrastResetRequested.connect(lambda: self._reset_slider(sliders.contrastSlider))
 
         # File‐open / save
         self.view.options.open_button.clicked.connect(self.open_image)
@@ -61,6 +65,10 @@ class AppController:
         sliders.brightnessSlider.setValue(50)
         sliders.saturationSlider.setValue(50)
         sliders.contrastSlider.setValue(50)
+
+    def _reset_slider(self, slider):
+        slider.setValue(slider.default_value)
+        self.render_image()
 
     def open_image(self):
         path, _ = QFileDialog.getOpenFileName(
