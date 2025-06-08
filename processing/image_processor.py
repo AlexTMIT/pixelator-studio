@@ -90,3 +90,10 @@ class ImageProcessor:
         factor = raw/50 if raw<50 else 1+4*((raw-50)/50)**2
         arr = np.clip(128 + (np.array(image, np.float32)-128)*factor,0,255).astype(np.uint8)
         return Image.fromarray(arr)
+
+    def process_image(self, img, b_amt, s_amt, c_amt, p_amt, pm, scheme):
+        img = self.edit_brightness(img, b_amt)
+        img = self.edit_saturation(img, s_amt)
+        img = self.edit_contrast(img, c_amt)
+        img = self.pixelate(pm, p_amt, img, scheme)
+        return img

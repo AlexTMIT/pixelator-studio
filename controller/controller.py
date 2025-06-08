@@ -87,9 +87,7 @@ class AppController:
         self.view.preview.set_image(resized)
 
     def save_image(self):
-        image = self.model.image_edited
-        if image is None:
-            return
+        image = self.get_processed_image()
 
         path, _ = QFileDialog.getSaveFileName(
             self.view, "Save Image As", "", "JPEG (*.jpg);;PNG (*.png);;All Files (*)"
@@ -100,7 +98,7 @@ class AppController:
         ext = path.split('.')[-1].upper()
         fmt = "JPEG" if ext.lower() == "jpg" else ext
         try:
-            image.save(path, fmt)
+            image.save(path, fmt, quality=95, subsampling=0)
         except Exception as e:
             print(f"Failed to save image: {e}")
 
@@ -109,17 +107,19 @@ class AppController:
         return img
 
     def render_image(self):
-        img = self.model.image.copy()
-        pm = self.model.pixel_mode
-        amt = self.model.pixel_amount or 0
-
-        img = self.processor.edit_brightness(img, self.model.brightness)
-        img = self.processor.edit_saturation(img, self.model.saturation)
-        img = self.processor.edit_contrast(img, self.model.contrast)
-        img = self.processor.pixelate(pm, amt, img, self.model.color_scheme)
-
+        img = self.get_processed_image()
         self.model.image_edited = img
         self.view.preview.set_image(img)
+
+    def get_processed_image(self):
+        orig = self.model.image.copy()
+        b_amt = self.model.brightness
+        s_amt = self.model.saturation
+        c_amt = self.model.contrast
+        p_amt = self.model.pixel_amount
+        pm = self.model.pixel_mode
+        scheme = self.model.color_scheme
+        return self.processor.process_image(orig, b_amt, s_amt, c_amt, p_amt, pm, scheme)
 
     def calculate_factor(self, raw_value):
         if raw_value < 50:
