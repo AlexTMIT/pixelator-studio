@@ -28,6 +28,9 @@ class AppController:
         self.view.colors.combo_mode.currentIndexChanged.connect(self._on_mode_changed)
         self.view.colors.combo_scheme.currentIndexChanged.connect(self._on_scheme_changed)
 
+        # Preview
+        self.view.preview.clicked.connect(self._on_preview_clicked)
+
     def _update_and_render(self, name: str, val: int):
         self.model.update_slider(name, val)
         self.render_image()
@@ -41,6 +44,10 @@ class AppController:
     def _on_scheme_changed(self, idx: int):
         scheme = self.view.colors.combo_scheme.itemData(idx)
         self.model.color_scheme = scheme
+        self.render_image()
+
+    def _on_preview_clicked(self):
+        self.model.image = self.model.image.transpose(Image.ROTATE_270)
         self.render_image()
 
     def reset_parameters(self):
