@@ -10,7 +10,6 @@ class ColorScheme(Enum):
     WARM_BEIGE   = "warm beige"
     COOL_GRAY    = "cool gray"
     VIBRANT_SUNSET = "vibrant sunset"
-    PASTEL_MINT  = "pastel mint"
     HOT_N_COLD   = "hot n cold"
     ICE_CREAM     = "ice cream"
     WARM_CLAY = "warm clay"
